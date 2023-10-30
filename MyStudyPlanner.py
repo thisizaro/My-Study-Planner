@@ -19,6 +19,9 @@ def initialize_calendar():
         flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRETS_FILE, ['https://www.googleapis.com/auth/calendar'])
         creds = flow.run_local_server(port=8080)
 
+    with open('token.json', 'w') as token_file:
+        token_file.write(creds.to_json())
+    
     service = build(API_NAME, API_VERSION, credentials=creds)
     return service
 
@@ -63,11 +66,15 @@ def main():
     
     start_date = datetime.now() + timedelta(days=1)
 
+    Event_counter = 0
     for day, tasks in study_plan.items():
         for time, description in tasks.items():
             summary = f'Study - {day} - {time}'
             create_study_event(service, calendar_id, summary, description, start_date)
             start_date += timedelta(hours=3)
+            Event_counter+=1
+            if Event_counter==3:
+                start_date += timedelta(hours=15)
 
 if __name__ == "__main__":
     main()
